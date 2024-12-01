@@ -1,0 +1,249 @@
+{% extends 'main.html' %}
+
+{% block css_imports %}
+{% endblock css_imports %}
+
+{% block content %}
+  <div style="height:20px;"></div>
+    {% if current_user.is_admin==False %}
+      {% if current_user.is_authenticated==False %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+      {% else %}
+
+        <h2 class="font_prop headings" style="display:inline;" id="issued">Issued</h2>
+        <h2 class="font_prop headings" style="font-weight:300;display:inline;font-size:1.25em;float:right;margin-top:0.20em;">{{ fine }}</h2>
+        <h2 style="font-family:Roboto,sans-serif;font-weight:300;font-size:1.25em;display:inline;float:right;margin-top:0.35em;">₹</h2>        
+        <h2 class="font_prop headings" style="display:inline;float:right;margin-top:-0.025em;">Fine&nbsp&nbsp</h2>
+        <div style="height:1em;"></div>
+        <div class="books_grid">
+          {% for i,book in enumerate(books) %}
+            <div class="book" style="height:26.4em">
+              <img class="book_img" src="{{ book.img_url }}" onerror="this.style.opacity='0';">
+              <div style="height:6em;">
+                <h5 class="font_prop book_title">{{ book.title }}</h5>
+                <h5 class="font_prop book_author">{{ book.author }}</h5>
+              </div>
+              <h5 class="font_prop book_title" style="display:inline;font-size:0.85em;">Due&nbsp</h5>
+              <h5 class="font_prop book_author" style="display:inline;font-size:0.85em;letter-spacing: -0.5px;">{{ due_dates[i] }}</h5>
+              <form method="post" action="{{ url_for('transact',book_id=book['id']) }}">
+                <button class="font_prop submit_button" style="display:inline;float:right;margin-top:-25px;">RETURN</button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div style="height:1em;"></div>
+
+        <h2 class="font_prop headings" id="watchlist">Watchlist</h2>
+        <div style="height:1em;"></div>
+        <div class="books_grid">
+          {% for i,book in enumerate(watchlist_books) %}
+            <div class="book" style="height:26.65em">
+              <img class="book_img" src="{{ book.img_url }}" onerror="this.style.opacity='0';">
+              <div style="height:6em;">
+                <h5 class="font_prop book_title">{{ book.title }}</h5>
+                <h5 class="font_prop book_author">{{ book.author }}</h5>
+              </div>
+              <form method="post", action="{{ url_for('denotify',book_id=book.id) }}">
+                <button class="font_prop submit_button" style="float:right;">REMOVE</button> 
+              </form>
+              {% if book.stocks!=0 %}
+                <form method="post" action="{{ url_for('transact',book_id=book.id) }}">
+                  <button class="font_prop submit_button" style="float:right">ISSUE</button>
+                </form>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div style="height:1em;"></div>
+
+        <h2 class="font_prop headings">Waiting for Approval</h2>
+        <div style="height:1em;"></div>
+        <div class="books_grid">
+          {% for i,book in enumerate(to_be_approved_books) %}
+            <div class="book" style="height:26.65em">
+              <img class="book_img" src="{{ book[0].img_url }}" onerror="this.style.opacity='0';">
+              <div style="height:6em;">
+                <h5 class="font_prop book_title">{{ book[0].title }}</h5>
+                <h5 class="font_prop book_author">{{ book[0].author }}</h5>
+                <div style="height:0.5em;"></div>
+                <h5 class="font_prop book_author">{{ book[1].upper() }}</h5>
+              </div>
+              <form method="post", action="{{ url_for('remove_approval_request',book_id=book[0].id) }}">
+                <button class="font_prop submit_button" style="float:right;">REMOVE</button> 
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div style="height:1em;"></div>
+
+        <h2 class="font_prop headings">Request Book</h2>
+          <div style="width:15em">
+            <form method="post" action="{{ url_for('request_book') }}">
+              <label for="title">Title</label><br>
+              <input name="title" type="text" required maxlength="40"><br>
+              <label for="author">Author</label><br>
+              <input name="author" type="text" required maxlength="40"><br>
+              <div style="height:5px;"></div>
+              <button class="font_prop submit_button" style="float:right;margin-right:-0.5em;">SUBMIT</button>
+            </form>
+            <div style="height:1em;"></div>
+          </div>
+
+      {% endif %}
+    {% else %}
+        {% if current_user.is_authenticated==True %}
+          <h2 class="font_prop headings">Add Book</h2>
+          <div style="height:0.5em;"></div>
+          <div style="width:15em">
+            <form method="post" action="{{ url_for('add_book') }}">
+              <label for="title">Title</label><br>
+              <input name="title" type="text" required maxlength="40"><br>
+              <label for="author">Author</label><br>
+              <input name="author" type="text" required maxlength="40"><br>
+              <label for="subject">Subject</label><br>
+              <input name="subject" type="text" required maxlength="40"><br>
+              <label for="sem">Semester</label><br>
+              <input name="sem" type="text" required maxlength="40"><br>
+              <label for="stocks">Stocks</label><br>
+              <input name="stocks" type="number" required maxlength="40"><br>
+              <label for="img_url">Image URL</label><br>
+              <input name="img_url" type="text" required><br>
+              <div style="height:10px;"></div>
+              <button class="font_prop submit_button" style="float:right;margin-right:-0.5em;">ADD BOOK</button>
+            </form>
+          </div>
+
+          <div style="height:3em"></div>
+
+          <h2 class="font_prop headings">Requests</h2>
+          <div style="height:0.5em;"></div>
+          <div class="books_grid">
+            {% for br in book_requests %}
+              <div class="book" style="height:7.9em;">
+                <h5 class="font_prop book_title">{{ br.title }}</h5>
+                <h5 class="font_prop book_author">{{ br.author }}</h5>
+                <br>
+                <form method="post" action="{{ url_for('delete_request',request_id=br.id) }}">
+                  <button class="font_prop submit_button" style="float:right;">DELETE</button>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div style="height:3em"></div>
+
+          <h2 class="font_prop headings">Approve Issue Requests</h2>
+          <div style="height:0.5em;"></div>
+          <div>
+            {% for air in approval_issue_requests %}
+              <div class="font_prop" style="display:flex;column-gap:20px;font-size:1em;font-weight: 500;">
+                <div>
+                  {{get_user(air.user_id).first_name}}
+                </div>
+                <div>
+                  {{get_book(air.book_id).title}}
+                </div>
+                <div>
+                  <form method="post" action="{{ url_for('approve',book_id=air.book_id,user_id=air.user_id,type_approval='issue') }}">
+                    <button class="font_prop submit_button">APPROVE</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div style="height:3em"></div>
+
+          <h2 class="font_prop headings">Approve Return Requests</h2>
+          <div style="height:0.5em;"></div>
+          <div>
+            {% for arr in approval_return_requests %}
+              <div class="font_prop" style="display:flex;column-gap:20px;font-size:1em;font-weight: 500;">
+                <div>
+                  {{get_user(arr.user_id).first_name}}
+                </div>
+                <div>
+                  {{get_book(arr.book_id).title}}
+                </div>
+                <div>
+                  <form method="post" action="{{ url_for('approve',book_id=arr.book_id,user_id=arr.user_id,type_approval='return') }}">
+                    <button class="font_prop submit_button">APPROVE</button>
+                  </form>
+                </div>
+              </div>
+              <div style="height:20px"></div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="height:1em;"></div>
+          <h2 class="font_prop headings" style="text-align: center;">Features</h2>
+          <div style="height:2em;"></div>
+          <div style="display:flex;align-items:center;justify-content:center;">
+            <div class="feature_grid">
+              <div class="feature">
+                <h5 class="font_prop feature_heading">
+                  Issue / Return
+                </h5>
+                <h5 class="font_prop feature_desc">
+                  Issue or Return books at the click of a button
+                </h5>
+              </div>
+      
+              <div class="feature">
+                <h5 class="font_prop feature_heading">
+                  Search
+                </h5>
+                <h5 class="font_prop feature_desc">
+                  Get faster access to books through search
+                </h5>
+              </div>
+      
+              <div class="feature">
+                <h5 class="font_prop feature_heading">
+                  Explore
+                </h5>
+                <h5 class="font_prop feature_desc">
+                  Browse the entire catalog organized by semester
+                </h5>
+              </div>
+      
+              <div class="feature">
+                <h5 class="font_prop feature_heading">
+                  Get Notified
+                </h5>
+                <h5 class="font_prop feature_desc">
+                  Book out of stock? Get an email notification once it is back in stock
+                </h5>
+              </div>
+      
+              <div class="feature">
+                <h5 class="font_prop feature_heading">
+                  Fine Calculator
+                </h5>
+                <h5 class="font_prop feature_desc">
+                  Fine calculator automatically calculates fine for you
+                </h5>
+              </div>
+      
+              <div class="feature">
+                <h5 class="font_prop feature_heading">
+                  Manage Stocks
+                </h5>
+                <h5 class="font_prop feature_desc">
+                  Admin can manage stocks, add new books
+                </h5>
+              </div>
+      
+            </div>
+          </div>
+        {% endif %}
+    {% endif %}
+  <div style="height:20px;"></div>
+{% endblock content %}
+
+{% block js_imports %}
+{% endblock js_imports %}
