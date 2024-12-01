@@ -23,5 +23,4 @@
 - Request for books
 - And many more...
 
-## SQL data credits
-Aruna Ravi & Tarun Kumar BMSCE 2023
+
